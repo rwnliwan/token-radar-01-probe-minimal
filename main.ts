@@ -6,6 +6,8 @@
 // the point is only to see whether run_completes passes or fails.
 // If this trivial program also fails run_completes, the fault is on the
 // grader side. If it passes, the fault is specific to our main entry.
+// The board carries score 0 for every protocol on purpose: ranking is
+// out of scope for this probe; only execution matters.
 //
 // Runs as the grader does: `node /bot/main.ts` with no arguments,
 // no network, input at /input/snapshot.json, output to /output.
@@ -57,7 +59,7 @@ if (protocols.length === 0) {
 
 // A minimal board: one row per protocol, scored 0, in snapshot order.
 // The diagnostic does not rank anything; it only proves the pipeline runs.
-const rows = protocols.map((p) => {
+const boardRows = protocols.map((p) => {
   const rec = (p ?? {}) as { slug?: unknown; name?: unknown };
   const slug = typeof rec.slug === 'string' ? rec.slug : 'unknown';
   const name = typeof rec.name === 'string' ? rec.name : slug;
@@ -65,8 +67,8 @@ const rows = protocols.map((p) => {
 });
 
 mkdirSync(out, { recursive: true });
-writeFileSync(join(out, 'board.json'), `${JSON.stringify({ rows })}\n`);
-writeFileSync(join(out, 'data.js'), `window.DATA=${JSON.stringify({ rows })};\n`);
+writeFileSync(join(out, 'board.json'), `${JSON.stringify({ rows: boardRows })}\n`);
+writeFileSync(join(out, 'data.js'), `window.DATA=${JSON.stringify({ rows: boardRows })};\n`);
 
 function copyFiles(from: string, to: string): string[] {
   if (!existsSync(from)) return [];
@@ -124,6 +126,6 @@ const doc = { schema: 'makefun/dossier/v1', cover: 0, text, images };
 writeFileSync(join(out, 'dossier.json'), `${JSON.stringify(doc)}\n`);
 
 process.stdout.write(
-  `probe-minimal: ${protocols.length} protocols, ${watchlist.length} on the watchlist, ${rows.length} rows\n` +
+  `probe-minimal: ${protocols.length} protocols, ${watchlist.length} on the watchlist, ${boardRows.length} rows\n` +
   `probe-minimal: wrote board.json, data.js, dashboard (${dashFiles.length} files), screenshots (${shots.length} images), dossier.json\n`,
 );
